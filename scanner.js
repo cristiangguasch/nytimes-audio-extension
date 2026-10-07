@@ -3,7 +3,7 @@
   globalThis.__nytAudioScannerInstalled = true;
 
   const HOME = "https://www.nytimes.com/";
-  const MAX_ARTICLES = 60;
+  const MAX_ARTICLES = 250;
 
   chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message?.type === "ping") {
@@ -17,10 +17,9 @@
     return true;
   });
 
-  function linksFrom(html) {
-    const document = new DOMParser().parseFromString(html, "text/html");
+  function linksFromDocument(sourceDocument) {
     const seen = new Set();
-    return [...document.querySelectorAll("a[href]")].map((anchor) => {
+    return [...sourceDocument.querySelectorAll("a[href]")].map((anchor) => {
       try {
         const url = new URL(anchor.getAttribute("href"), HOME);
         url.search = "";
@@ -36,10 +35,21 @@
       if (!item) return false;
       const url = new URL(item.article);
       if (url.hostname !== "www.nytimes.com" || !url.pathname.endsWith(".html")) return false;
+      if (url.pathname.includes("/podcasts/")) return false;
       if (!/\/\d{4}\/\d{2}\/\d{2}\//.test(url.pathname) || seen.has(item.article)) return false;
       seen.add(item.article);
       return true;
     }).slice(0, MAX_ARTICLES);
+  }
+
+  function mergeLinks(...groups) {
+    const merged = new Map();
+    for (const group of groups) {
+      for (const item of group) {
+        if (!merged.has(item.article)) merged.set(item.article, item);
+      }
+    }
+    return [...merged.values()].slice(0, MAX_ARTICLES);
   }
 
   function metadata(document, name) {
@@ -93,9 +103,14 @@
   }
 
   async function scan() {
+    // The live homepage DOM contains client-rendered and lower-page links that
+    // are sometimes absent from the HTML returned by a separate fetch.
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    const liveLinks = location.pathname === "/" ? linksFromDocument(document) : [];
     const response = await fetch(HOME, { credentials: "include", cache: "no-store" });
     if (!response.ok) throw new Error(`NYTimes returned ${response.status}. Open nytimes.com and confirm that you are signed in.`);
-    const candidates = linksFrom(await response.text());
+    const fetchedDocument = new DOMParser().parseFromString(await response.text(), "text/html");
+    const candidates = mergeLinks(liveLinks, linksFromDocument(fetchedDocument));
     if (!candidates.length) throw new Error("No article links were found on the homepage.");
     const entries = (await mapLimited(candidates, 6, inspect)).filter(Boolean);
     return { scanned: candidates.length, entries };

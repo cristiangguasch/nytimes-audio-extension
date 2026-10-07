@@ -12,4 +12,6 @@ Click the extension icon to open the playlist. Press the refresh icon at the top
 
 Playlists are saved by date in Chrome's local extension storage. Refreshing merges new discoveries into the current day and does not remove earlier dates.
 
+The scanner combines links from the fully rendered homepage tab with links in the fetched homepage HTML. Podcast URLs are excluded because their pages do not expose narrated-article MP3 files.
+
 The extension only requests access to NYTimes domains and local extension storage. It does not send your cookies or playlist to another server.

@@ -26,7 +26,9 @@ function renderDates(selected) {
 }
 
 function render(date) {
-  const tracks = archive[date] || [];
+  const tracks = (archive[date] || []).filter((track) => {
+    try { return !new URL(track.article).pathname.includes("/podcasts/"); } catch { return false; }
+  });
   if (!tracks.length) {
     playlist.innerHTML = '<div class="empty">No narrated articles saved yet.</div>';
     return;

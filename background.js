@@ -1,6 +1,6 @@
 const HOME = "https://www.nytimes.com/";
 const RSS = "https://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml";
-const MAX_ARTICLES = 60;
+const MAX_ARTICLES = 250;
 
 chrome.action.onClicked.addListener(() => {
   chrome.tabs.create({ url: chrome.runtime.getURL("playlist.html") });
@@ -60,6 +60,7 @@ function homepageLinks(html) {
       const aria = attrs.match(/aria-label=["']([^"']+)["']/i)?.[1];
       const article = url.href;
       if (url.hostname !== "www.nytimes.com" || !url.pathname.endsWith(".html")) continue;
+      if (url.pathname.includes("/podcasts/")) continue;
       if (!/\/\d{4}\/\d{2}\/\d{2}\//.test(url.pathname) || seen.has(article)) continue;
       seen.add(article);
       links.push({ article, title: decode(aria || match[4]) });
@@ -79,7 +80,7 @@ function rssLinks(xml) {
   })).filter((item) => {
     try {
       const url = new URL(item.article);
-      return url.hostname === "www.nytimes.com" && url.pathname.endsWith(".html");
+      return url.hostname === "www.nytimes.com" && url.pathname.endsWith(".html") && !url.pathname.includes("/podcasts/");
     } catch {
       return false;
     }
@@ -156,7 +157,10 @@ async function waitForTab(tabId) {
 }
 
 async function scanInBrowser() {
-  let [tab] = await chrome.tabs.query({ url: ["https://www.nytimes.com/*"] });
+  const nytTabs = await chrome.tabs.query({ url: ["https://www.nytimes.com/*"] });
+  let tab = nytTabs.find((candidate) => {
+    try { return new URL(candidate.url).pathname === "/"; } catch { return false; }
+  });
   if (!tab) tab = await chrome.tabs.create({ url: HOME, active: false });
   await waitForTab(tab.id);
 
@@ -194,8 +198,11 @@ async function refreshPlaylist() {
   }
   const date = today();
   const { archive = {} } = await chrome.storage.local.get("archive");
-  const merged = new Map((archive[date] || []).map((item) => [item.article, item]));
-  for (const item of found) merged.set(item.article, item);
+  const allowed = (item) => {
+    try { return !new URL(item.article).pathname.includes("/podcasts/"); } catch { return false; }
+  };
+  const merged = new Map((archive[date] || []).filter(allowed).map((item) => [item.article, item]));
+  for (const item of found.filter(allowed)) merged.set(item.article, item);
   archive[date] = [...merged.values()];
   await chrome.storage.local.set({ archive, lastRefresh: new Date().toISOString() });
   return { date, found: found.length, scanned, source };
