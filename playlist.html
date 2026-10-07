@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NYTimes Audio Playlist</title>
+  <link rel="stylesheet" href="playlist.css">
+</head>
+<body>
+  <main>
+    <div class="controls">
+      <select id="date" aria-label="Playlist date"></select>
+      <button id="refresh" type="button" aria-label="Refresh playlist" title="Refresh playlist">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 0 0-14.9-4M4 3v5h5M4 13a8 8 0 0 0 14.9 4M20 21v-5h-5"/></svg>
+      </button>
+    </div>
+    <p class="status" id="status" role="status"></p>
+    <div id="playlist"></div>
+  </main>
+  <script src="playlist.js"></script>
+</body>
+</html>

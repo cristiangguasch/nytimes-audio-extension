@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "NYTimes Audio Playlist",
+  "version": "1.0.0",
+  "description": "Builds a daily playlist from narrated articles linked on the New York Times homepage.",
+  "permissions": ["storage", "tabs", "scripting"],
+  "host_permissions": [
+    "https://www.nytimes.com/*",
+    "https://rss.nytimes.com/*",
+    "https://static.nytimes.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://www.nytimes.com/*"],
+      "js": ["scanner.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Open NYTimes Audio Playlist"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'; media-src https://static.nytimes.com"
+  }
+}

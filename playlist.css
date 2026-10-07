@@ -1,0 +1,92 @@
+:root {
+  color-scheme: light;
+  --background: #f7f7f5;
+  --text: #171717;
+  --muted: #777;
+  --line: #d9d9d5;
+  --active: #0a64c8;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+main {
+  width: min(760px, calc(100% - 32px));
+  margin: 52px auto 100px;
+}
+.controls {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 14px;
+  min-height: 42px;
+  border-bottom: 1px solid var(--text);
+}
+select {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-size: 13px;
+  padding: 8px 4px;
+  cursor: pointer;
+}
+button {
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  padding: 8px;
+  cursor: pointer;
+}
+button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+button.loading svg { animation: spin .8s linear infinite; }
+.status {
+  min-height: 18px;
+  margin: 10px 0;
+  color: var(--muted);
+  font-size: 11px;
+  text-align: right;
+}
+.track {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 16px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line);
+}
+.number { color: var(--muted); font-size: 12px; padding-top: 3px; }
+.content { min-width: 0; }
+.title {
+  display: block;
+  color: var(--text);
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 20px;
+  line-height: 1.3;
+  text-decoration: none;
+}
+.title:hover { text-decoration: underline; text-underline-offset: 3px; }
+.section {
+  margin: 5px 0 15px;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+audio { display: block; width: 100%; height: 34px; }
+.empty {
+  padding: 70px 0;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 520px) {
+  main { margin-top: 20px; }
+  .track { grid-template-columns: 24px minmax(0, 1fr); gap: 8px; }
+  .title { font-size: 18px; }
+}
